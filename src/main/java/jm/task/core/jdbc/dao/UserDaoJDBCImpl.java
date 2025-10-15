@@ -47,36 +47,44 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String sql = "INSERT INTO users (name, lastName, age) VALUES (name, lastname, age)";
-
+        String sql = "INSERT INTO users (name, lastname, age) VALUES ('"
+                + name + "', '" + lastName + "', " + age + ")";
         Connection connection = null;
+
+
         try {
             connection = Util.getInstance().getConnection();
             connection.setAutoCommit(false);
 
-            try (Statement statement = connection.createStatement()) {
-                String s = "INSERT INTO users (name, lastname, age) VALUES '"
-                        + name + "', '" + lastName + "', " + age + ")";
+            try (
+                    Statement statement = connection.createStatement()) {
+
                 statement.executeUpdate(sql);
                 statement.executeUpdate("INSERT INTO logs VALUES ('User added')");
             }
-
             connection.commit();
+            System.out.println("User с именем – " + name + " добавлен в базу данных");
 
         } catch (SQLException e) {
             System.err.println("Ошибка при сохранении пользователя: " + e.getMessage());
+
             try {
-                connection.rollback();
-                System.out.println("Транзакция откатилась");
-            } catch (SQLException rollbackEx) {
-                rollbackEx.printStackTrace();
+                if (connection != null) {
+                    connection.rollback();
+                    System.out.println("Транзакция откатилась");
+                }
+            } catch (SQLException rex) {
+                rex.printStackTrace();
             }
         } finally {
+
             try {
-                if (connection != null) connection.setAutoCommit(true);
-                if (connection != null) connection.close();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }
