@@ -19,9 +19,10 @@ public class UserDaoJDBCImpl implements UserDao {
         String sql =
                 """
                         CREATE TABLE IF NOT EXISTS users (
-                           name VARCHAR(50),
-                           lastName VARCHAR(50),
-                            age INT
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        name VARCHAR(50),
+                        lastName VARCHAR(50),
+                        age INT
                             )
                         """;
 
@@ -47,38 +48,40 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String sql = "INSERT INTO users (name, lastname, age) VALUES ('"
-                + name + "', '" + lastName + "', " + age + ")";
+        String sql = "INSERT INTO users (name, lastname, age) VALUES (?, ?, ?)";
+
+
         Connection connection = null;
+        PreparedStatement preparedStatement = null;
 
 
         try {
             connection = Util.getInstance().getConnection();
-            connection.setAutoCommit(false);
+            connection.setAutoCommit(false); // начинаем транзакцию
 
-            try (
-                    Statement statement = connection.createStatement()) {
 
-                statement.executeUpdate(sql);
-                statement.executeUpdate("INSERT INTO logs VALUES ('User added')");
-            }
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, lastName);
+            preparedStatement.setByte(3, age);
+            preparedStatement.executeUpdate();
+
+
             connection.commit();
             System.out.println("User с именем – " + name + " добавлен в базу данных");
 
         } catch (SQLException e) {
             System.err.println("Ошибка при сохранении пользователя: " + e.getMessage());
-
             try {
-                if (connection != null) {
-                    connection.rollback();
-                    System.out.println("Транзакция откатилась");
-                }
-            } catch (SQLException rex) {
-                rex.printStackTrace();
+                connection.rollback();
+                System.out.println("Транзакция откатилась");
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
             }
         } finally {
-
             try {
+                if (preparedStatement != null) preparedStatement.close();
+//                if (logStatement != null) logStatement.close();
                 if (connection != null) {
                     connection.setAutoCommit(true);
                     connection.close();

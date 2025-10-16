@@ -25,8 +25,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveUser(String name, String lastName, byte age) throws SQLException {
         user.saveUser(name, lastName, age);
-        System.out.println("User с именем – " + name + " добавлен в базу данных");
-
     }
 
     @Override
