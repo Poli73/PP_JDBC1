@@ -11,6 +11,11 @@ public class Util {
     private static final String PASSWORD = "Polina753!!!@goodSQL";
 
     private Util() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("JDBC драйвер не найден: " + e.getMessage());
+        }
     }
 
 
@@ -25,7 +30,7 @@ public class Util {
         return instance;
     }
 
-    public static Connection getConnection() {
+    public Connection getConnection() {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {

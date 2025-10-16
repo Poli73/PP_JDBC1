@@ -24,3 +24,5 @@ TestResults.xml
 *.tmp
 *.log
 /target/
+/target/
+/.idea/
